@@ -1,98 +1,124 @@
 import React, { useState } from 'react';
-import { CHALLENGES } from '../data/challenges.js';
-import { executeCommand } from '../api/index.js';
-import { normalizeCommand } from '../../../shared/commandValidator.js';
-import RiskBadge from './RiskBadge.jsx';
+import { QUIZ } from '../data/quiz.js';
 
 /**
- * Learning / Challenge mode. The user is given a task, types the command
- * they think solves it, and the app checks + runs it, then explains the lesson.
+ * Learning Mode — an AWS CLI knowledge quiz.
+ *
+ * The user answers multiple-choice questions. Every answer reveals an
+ * explanation so they learn from each click, and a running score is tracked.
+ * At the end they get a summary and can retry.
  */
 export default function LearningMode() {
   const [index, setIndex] = useState(0);
-  const [input, setInput] = useState('');
-  const [status, setStatus] = useState(null); // 'correct' | 'incorrect'
-  const [execution, setExecution] = useState(null);
-  const [running, setRunning] = useState(false);
+  const [selected, setSelected] = useState(null); // chosen option index
+  const [answered, setAnswered] = useState(false);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
 
-  const challenge = CHALLENGES[index];
+  const total = QUIZ.length;
+  const q = QUIZ[index];
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const normalized = normalizeCommand(input);
-    if (!normalized) return;
-
-    const correct = normalized === challenge.expected;
-    setStatus(correct ? 'correct' : 'incorrect');
-
-    if (correct) {
-      setRunning(true);
-      setExecution(null);
-      try {
-        const result = await executeCommand({ command: normalized });
-        setExecution(result);
-      } catch (err) {
-        setExecution({ success: false, stderr: err.message, command: normalized });
-      } finally {
-        setRunning(false);
-      }
-    }
+  function choose(optionIndex) {
+    if (answered) return; // lock after first answer
+    setSelected(optionIndex);
+    setAnswered(true);
+    if (optionIndex === q.answer) setScore((s) => s + 1);
   }
 
-  function nextChallenge() {
-    setIndex((i) => (i + 1) % CHALLENGES.length);
-    setInput('');
-    setStatus(null);
-    setExecution(null);
+  function next() {
+    if (index + 1 >= total) {
+      setFinished(true);
+      return;
+    }
+    setIndex((i) => i + 1);
+    setSelected(null);
+    setAnswered(false);
+  }
+
+  function restart() {
+    setIndex(0);
+    setSelected(null);
+    setAnswered(false);
+    setScore(0);
+    setFinished(false);
+  }
+
+  if (finished) {
+    const pct = Math.round((score / total) * 100);
+    const message =
+      pct === 100 ? 'Perfect score! You know your AWS CLI.' :
+      pct >= 70 ? 'Great work — solid AWS CLI fundamentals.' :
+      pct >= 40 ? 'Good start. Review the explanations and try again.' :
+      'Keep practicing — every command teaches you something.';
+    return (
+      <section className="panel learning" aria-label="Quiz results">
+        <div className="panel-header">
+          <h2>🎓 Quiz Complete</h2>
+        </div>
+        <div className="quiz-result">
+          <div className="quiz-score-big">{score} / {total}</div>
+          <div className="quiz-score-pct">{pct}%</div>
+          <p>{message}</p>
+          <button className="btn btn-primary" onClick={restart} type="button">
+            Try again
+          </button>
+        </div>
+      </section>
+    );
   }
 
   return (
-    <section className="panel learning" aria-label="Learning mode">
+    <section className="panel learning" aria-label="Learning quiz">
       <div className="panel-header">
-        <h2>🎓 Learning Mode</h2>
+        <h2>🎓 Learning Mode — Quiz</h2>
         <span className="challenge-count">
-          Challenge {index + 1} / {CHALLENGES.length}
+          Question {index + 1} / {total} · Score {score}
         </span>
       </div>
 
-      <div className="challenge">
-        <h3>{challenge.title}</h3>
-        <p className="challenge-prompt">{challenge.prompt}</p>
+      <div className="quiz">
+        <div className="quiz-progress">
+          <div className="quiz-progress-bar" style={{ width: `${(index / total) * 100}%` }} />
+        </div>
 
-        <form onSubmit={handleSubmit} className="challenge-form">
-          <input
-            className="text-input mono"
-            placeholder="Type the AWS CLI command…"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            spellCheck={false}
-            aria-label="Your command"
-          />
-          <button className="btn btn-primary" type="submit">Check &amp; Run</button>
-        </form>
+        <span className="quiz-tag">{q.service}</span>
+        <h3 className="quiz-question">{q.question}</h3>
 
-        {status === 'incorrect' && (
-          <div className="feedback feedback-error">
-            Not quite. Hint: the expected command starts with <code>{challenge.expected.split(' ').slice(0, 2).join(' ')}</code>. Try again.
-          </div>
-        )}
+        <ul className="quiz-options">
+          {q.options.map((opt, i) => {
+            let cls = 'quiz-option';
+            if (answered) {
+              if (i === q.answer) cls += ' correct';
+              else if (i === selected) cls += ' incorrect';
+              else cls += ' dimmed';
+            }
+            return (
+              <li key={i}>
+                <button
+                  className={cls}
+                  onClick={() => choose(i)}
+                  disabled={answered}
+                  type="button"
+                >
+                  <code className="mono">{opt}</code>
+                  {answered && i === q.answer && <span className="mark">✓</span>}
+                  {answered && i === selected && i !== q.answer && <span className="mark">✕</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
 
-        {status === 'correct' && (
-          <div className="feedback feedback-success">
-            ✓ Correct! <RiskBadge risk="LOW / READ ONLY" />
-          </div>
-        )}
-
-        {running && <p className="challenge-running">Running your command…</p>}
-
-        {execution && execution.success && (
+        {answered && (
           <>
-            <pre className="terminal-body small">{execution.stdout}</pre>
-            <div className="lesson">
-              <strong>What you learned:</strong> {challenge.lesson}
+            <div className={`feedback ${selected === q.answer ? 'feedback-success' : 'feedback-error'}`}>
+              {selected === q.answer ? '✓ Correct!' : '✕ Not quite.'}
             </div>
-            <button className="btn btn-secondary" onClick={nextChallenge} type="button">
-              Next challenge →
+            <div className="lesson">
+              <strong>Why:</strong> {q.explanation}
+            </div>
+            <button className="btn btn-primary" onClick={next} type="button">
+              {index + 1 >= total ? 'See results' : 'Next question →'}
             </button>
           </>
         )}

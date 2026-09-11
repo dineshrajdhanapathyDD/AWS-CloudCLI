@@ -190,6 +190,46 @@ body {
 .challenge-running { color: var(--text-dim); font-size: 13px; }
 .lesson { background: var(--bg-elev); border-left: 3px solid var(--accent); padding: 12px 14px; border-radius: 6px; margin: 12px 0; font-size: 14px; }
 
+/* Teaching-mode badge */
+.teach-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  background: rgba(74,158,255,0.15); color: var(--blue); border: 1px solid rgba(74,158,255,0.4);
+}
+
+/* Quiz */
+.quiz-progress { height: 6px; background: var(--bg-elev); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+.quiz-progress-bar { height: 100%; background: var(--accent); transition: width 0.3s ease; }
+.quiz-tag {
+  display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+}
+.quiz-question { margin: 0 0 16px; font-size: 16px; line-height: 1.4; }
+.quiz-options { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 10px; }
+.quiz-option {
+  width: 100%; text-align: left; cursor: pointer;
+  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 12px 14px; font-family: var(--sans); font-size: 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option code { color: var(--text); background: none; padding: 0; }
+.quiz-option.correct { border-color: var(--green); background: rgba(63,185,80,0.12); }
+.quiz-option.correct code { color: var(--green); }
+.quiz-option.incorrect { border-color: var(--red); background: rgba(248,81,73,0.12); }
+.quiz-option.incorrect code { color: var(--red); }
+.quiz-option.dimmed { opacity: 0.55; }
+.quiz-option .mark { font-weight: 700; }
+.quiz-option.correct .mark { color: var(--green); }
+.quiz-option.incorrect .mark { color: var(--red); }
+
+.quiz-result { text-align: center; padding: 16px 0; }
+.quiz-score-big { font-size: 44px; font-weight: 700; color: var(--accent); }
+.quiz-score-pct { font-size: 16px; color: var(--text-dim); margin-bottom: 8px; }
+.quiz-result p { margin: 8px 0 20px; color: var(--text); }
+
 /* Footer */
 .app-footer {
   margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);

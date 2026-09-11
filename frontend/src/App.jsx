@@ -110,7 +110,14 @@ export default function App() {
                   </select>
                 </label>
                 {selectedService && (
-                  <p className="service-desc">{selectedService.description}</p>
+                  <p className="service-desc">
+                    {selectedService.description}
+                    {selectedService.executable === false && (
+                      <span className="teach-badge" title="CloudCLI generates and explains a real command; execution stays limited to the read-only allowlist">
+                        Teaching mode
+                      </span>
+                    )}
+                  </p>
                 )}
 
                 <label className="field">
@@ -166,7 +173,7 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        <span>Built for the AWS Builder Center · Deploy Your First App Weekend Challenge</span>
+        <span>Built by DD</span>
         <span>Read-only allowlist · No shell execution · No credentials in browser</span>
       </footer>
     </div>

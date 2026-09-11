@@ -1,12 +1,19 @@
 # AWS CloudCLI
+# AWS CloudCLI
 
 **Ask. Understand. Execute. Learn AWS.**
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-online-3fb950)](https://main.da70y6rhrbfc1.amplifyapp.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-ff9900)](./LICENSE)
 
 An interactive AWS CLI learning application. Pick an AWS service, describe what
 you want to do in plain English, and CloudCLI uses Amazon Bedrock to generate
 the right AWS CLI command — then *teaches* you what it means, breaks it down,
 labels its risk, and (for safe read-only commands) lets you run it against a
 tightly controlled backend.
+
+- **Live app:** https://main.da70y6rhrbfc1.amplifyapp.com/
+- **Source:** https://github.com/dineshrajdhanapathyDD/AWS-CloudCLI
 
 Built for the **AWS Builder Center — Deploy Your First App Weekend Challenge**.
 
@@ -26,8 +33,9 @@ command. It never just spits out a command — for every result it shows:
 7. A **Copy command** button
 8. An **Execute** button — only when the command is on the safe allowlist
 
-It also has a **Learning Mode** with hands-on challenges that check your answer,
-run it, and explain what you learned.
+It also has a **Learning Mode** — an interactive multiple-choice quiz that
+builds AWS CLI knowledge, revealing an explanation after every answer and
+tracking your score.
 
 ## Problem
 
@@ -45,10 +53,15 @@ controlled backend that uses the AWS SDK (no shell at all).
 ## Features
 
 - Natural-language → AWS CLI command generation via Amazon Bedrock (Amazon Nova Lite)
+- **21 AWS services** in the dropdown: 5 with live executable read-only commands
+  (S3, EC2, Lambda, DynamoDB, STS) plus 16 popular services in teaching mode
+  (IAM, CloudWatch, CloudFormation, RDS, ECS, EKS, SNS, SQS, API Gateway,
+  CloudFront, Route 53, Secrets Manager, Systems Manager, KMS, ECR, CloudTrail)
 - Full teaching breakdown for every command
 - Risk labelling (read-only / medium / high / blocked)
 - Copy + one-click Execute for allowlisted read-only commands
 - Terminal-style output panel with an "what this means" explanation
+- **Learning Mode quiz** — multiple-choice questions with per-answer explanations and scoring
 - Learning / Challenge mode
 - Loading, empty, error, and execution states; responsive layout
 - **Mock mode** so the whole UI works with zero backend (great for local dev/demos)
@@ -201,7 +214,7 @@ Security is the core of this project. The command safety layer
 ## Testing
 
 ```bash
-# Security/allowlist suite (14 tests)
+# Security/allowlist suite (15 tests)
 npm test                    # from repo root
 
 # Backend handler suite (11 tests, scenarios 9/10/12 + execution security)
@@ -220,8 +233,10 @@ See [`TESTING.md`](./TESTING.md) for the manual end-to-end checklist.
 
 ## Known limitations
 
-- MVP supports **five** services (S3, EC2, Lambda, DynamoDB, STS) and a small set
-  of read-only commands. This is intentional.
+- The dropdown offers **21 services**, but only **five** (S3, EC2, Lambda,
+  DynamoDB, STS) have executable read-only commands. The other 16 are
+  "teaching mode": CloudCLI generates and explains a real command, but Execute
+  is disabled. This is intentional.
 - Execution is **read-only** only. No mutating commands can run.
 - Bedrock output can vary; if the model suggests a non-allowlisted command, the
   UI shows it but disables Execute.
@@ -244,10 +259,40 @@ _Add screenshots here after deploying:_
 - `docs/screenshot-output.png` — Terminal output + explanation
 - `docs/screenshot-learning.png` — Learning Mode
 
+## Cost / pricing
+
+CloudCLI runs on **serverless, pay-per-use** services, so idle cost is
+effectively zero and a demo workload costs cents. Rough figures for `us-east-1`
+(check the AWS pricing pages for current rates):
+
+| Service | Pricing model | Typical demo cost |
+| --- | --- | --- |
+| **Amazon Bedrock — Nova Lite** | Per 1K input/output tokens (fractions of a cent per request) | A few cents for hundreds of generations |
+| **AWS Lambda** | Free tier: 1M requests + 400K GB-sec/month | ~$0 at demo scale |
+| **Amazon API Gateway (REST)** | ~$3.50 per million requests + data transfer | ~$0 at demo scale |
+| **AWS Amplify Hosting** | Build minutes + GB served/stored (small monthly free allowance) | Cents/month for a static SPA |
+| **S3 (SAM deploy bucket)** | Storage + requests | Negligible |
+| **CloudWatch Logs** | Ingestion + storage | Negligible at demo scale |
+
+**Bottom line:** for the weekend challenge and light personal use, expect this
+to stay within or near the AWS Free Tier — typically well under **$1/month**.
+The main variable is Bedrock token usage, which scales only with how many
+commands you generate.
+
+> Tip: set a small **AWS Budgets** alert (e.g. $5) to stay worry-free.
+
+## License
+
+Released under the [MIT License](./LICENSE). © 2026 Dinesh Raj Dhanapathy (DD).
+
 ## Live deployment URL
 
-> **Live app:** _<add your Amplify URL here after deploying>_
-> **API base URL:** _<add your API Gateway `ApiBaseUrl` here>_
+> **Live app:** https://main.da70y6rhrbfc1.amplifyapp.com/
+> **Source code:** https://github.com/dineshrajdhanapathyDD/AWS-CloudCLI
+
+The backend API endpoint is intentionally not published here. The frontend
+receives it at build time via the `VITE_API_BASE_URL` environment variable
+(set in Amplify), and the SAM stack prints it as the `ApiBaseUrl` output.
 
 ---
 

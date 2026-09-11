@@ -16,11 +16,29 @@ const MODEL_ID = process.env.BEDROCK_MODEL_ID || 'amazon.nova-lite-v1:0';
 const client = new BedrockRuntimeClient({ region: REGION });
 
 const SUPPORTED = {
+  // Core services with executable read-only commands.
   s3: 'Amazon S3',
   ec2: 'Amazon EC2',
   lambda: 'AWS Lambda',
   dynamodb: 'Amazon DynamoDB',
   sts: 'AWS STS',
+  // Popular services (generate + teach only; execution stays allowlist-gated).
+  iam: 'AWS IAM',
+  cloudwatch: 'Amazon CloudWatch',
+  cloudformation: 'AWS CloudFormation',
+  rds: 'Amazon RDS',
+  ecs: 'Amazon ECS',
+  eks: 'Amazon EKS',
+  sns: 'Amazon SNS',
+  sqs: 'Amazon SQS',
+  apigateway: 'Amazon API Gateway',
+  cloudfront: 'Amazon CloudFront',
+  route53: 'Amazon Route 53',
+  secretsmanager: 'AWS Secrets Manager',
+  ssm: 'AWS Systems Manager',
+  kms: 'AWS KMS',
+  ecr: 'Amazon ECR',
+  cloudtrail: 'AWS CloudTrail',
 };
 
 function buildSystemPrompt(serviceName) {

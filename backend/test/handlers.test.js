@@ -54,7 +54,7 @@ describe('generate handler', () => {
   });
 
   it('scenario 12: invalid service selection is rejected', async () => {
-    const res = await generate(evt({ service: 'route53', prompt: 'do a thing' }));
+    const res = await generate(evt({ service: 'not-a-real-service', prompt: 'do a thing' }));
     expect(res.statusCode).toBe(400);
     expect(parse(res).code).toBe('INVALID_SERVICE');
   });
