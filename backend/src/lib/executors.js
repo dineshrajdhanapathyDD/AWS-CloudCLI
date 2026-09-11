@@ -44,6 +44,19 @@ export const EXECUTORS = {
     };
   },
 
+  'aws s3api list-buckets': async () => {
+    const c = new S3Client({ region: REGION });
+    const r = await c.send(new ListBucketsCommand({}));
+    const Buckets = (r.Buckets || []).map((b) => ({
+      Name: b.Name,
+      CreationDate: b.CreationDate ? new Date(b.CreationDate).toISOString() : null,
+    }));
+    return {
+      stdout: JSON.stringify({ Buckets }, null, 2),
+      explanation: 'The Buckets array lists each bucket with its name and creation date.',
+    };
+  },
+
   'aws ec2 describe-instances': async () => {
     const c = new EC2Client({ region: REGION });
     const r = await c.send(new DescribeInstancesCommand({}));

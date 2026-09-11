@@ -23,11 +23,10 @@ const SUPPORTED = {
   sts: 'AWS STS',
 };
 
-function buildPrompt(service, userPrompt) {
-  const serviceName = SUPPORTED[service] || service;
-  return `You are an AWS CLI teaching assistant. A learner selected the service "${serviceName}" and asked: "${userPrompt}".
+function buildSystemPrompt(serviceName) {
+  return `You are an AWS CLI teaching assistant.
 
-Return ONLY valid JSON (no markdown, no prose) with this exact shape:
+Return ONLY valid JSON (no markdown, no prose, no code fences) with this exact shape:
 {
   "command": "the single aws CLI command, read-only preferred, no shell operators",
   "explanation": "one or two sentences explaining what it does",
@@ -43,19 +42,27 @@ Rules:
 - Keep it minimal and correct.`;
 }
 
+function buildUserPrompt(serviceName, userPrompt) {
+  return `The learner selected the service "${serviceName}" and asked: "${userPrompt}". Produce the JSON described in your instructions.`;
+}
+
 /**
  * Calls Bedrock and returns parsed structured JSON.
  * Throws an Error with code 'BEDROCK_ERROR' on failure so the handler can
  * respond with a clean message (test scenario 9).
  */
 export async function generateWithBedrock(service, userPrompt) {
+  const serviceName = SUPPORTED[service] || service;
+  // Amazon Nova request schema (Bedrock Converse-style body).
   const body = {
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 700,
-    temperature: 0.2,
+    system: [{ text: buildSystemPrompt(serviceName) }],
     messages: [
-      { role: 'user', content: buildPrompt(service, userPrompt) },
+      { role: 'user', content: [{ text: buildUserPrompt(serviceName, userPrompt) }] },
     ],
+    inferenceConfig: {
+      maxTokens: 700,
+      temperature: 0.2,
+    },
   };
 
   let response;
@@ -77,7 +84,8 @@ export async function generateWithBedrock(service, userPrompt) {
   let parsed;
   try {
     const raw = JSON.parse(new TextDecoder().decode(response.body));
-    const text = raw?.content?.[0]?.text ?? '';
+    // Amazon Nova response shape: output.message.content[0].text
+    const text = raw?.output?.message?.content?.[0]?.text ?? '';
     parsed = extractJson(text);
   } catch (err) {
     const e = new Error('Could not parse a valid response from the AI model.');

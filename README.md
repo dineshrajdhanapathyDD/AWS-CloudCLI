@@ -44,7 +44,7 @@ controlled backend that uses the AWS SDK (no shell at all).
 
 ## Features
 
-- Natural-language → AWS CLI command generation via Amazon Bedrock (Claude 3 Haiku)
+- Natural-language → AWS CLI command generation via Amazon Bedrock (Amazon Nova Lite)
 - Full teaching breakdown for every command
 - Risk labelling (read-only / medium / high / blocked)
 - Copy + one-click Execute for allowlisted read-only commands
@@ -80,7 +80,7 @@ and it runs it through fixed AWS SDK calls — there is no shell to inject into.
 | **AWS Amplify Hosting** | Hosts and serves the React frontend (CI/CD from Git) |
 | **Amazon API Gateway** | REST API exposing `/generate` and `/execute` |
 | **AWS Lambda** | Two functions: command generation and controlled execution |
-| **Amazon Bedrock** | LLM (Claude 3 Haiku) that generates the structured command |
+| **Amazon Bedrock** | LLM (Amazon Nova Lite) that generates the structured command |
 | **AWS IAM** | Least-privilege execution roles for each Lambda |
 | **Amazon S3 / EC2 / DynamoDB / STS** | Targets of the allowlisted read-only demo commands |
 | **AWS CloudFormation** | Provisions the backend stack (via AWS SAM) |
@@ -142,7 +142,7 @@ npm test
 
 | Variable / Param | Purpose |
 | --- | --- |
-| `BEDROCK_MODEL_ID` | Bedrock model ID (default `anthropic.claude-3-haiku-20240307-v1:0`) |
+| `BEDROCK_MODEL_ID` | Bedrock model ID (default `amazon.nova-lite-v1:0`) |
 | `CORS_ORIGIN` | Allowed CORS origin — set to your Amplify URL in production |
 | `AWS_REGION` | Provided automatically by Lambda at runtime |
 
@@ -252,3 +252,4 @@ _Add screenshots here after deploying:_
 ---
 
 Built with React, AWS Amplify, API Gateway, AWS Lambda, and Amazon Bedrock.
+

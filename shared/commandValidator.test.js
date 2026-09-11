@@ -20,6 +20,13 @@ describe('commandValidator — required test scenarios', () => {
     expect(r.risk).toBe(RISK.READ_ONLY);
   });
 
+  // 1b. s3api list-buckets is an allowlisted read-only equivalent of s3 ls
+  it('1b. allows aws s3api list-buckets (read-only equivalent)', () => {
+    const r = validateCommand('aws s3api list-buckets');
+    expect(r.allowed).toBe(true);
+    expect(r.risk).toBe(RISK.READ_ONLY);
+  });
+
   // 3. Valid EC2 read-only request
   it('3. allows a valid EC2 describe-instances command', () => {
     const r = validateCommand('aws ec2 describe-instances');

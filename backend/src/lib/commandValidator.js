@@ -49,6 +49,13 @@ export const ALLOWLIST = [
     risk: RISK.READ_ONLY,
   },
   {
+    // Read-only equivalent of `s3 ls` that the model often prefers.
+    command: 'aws s3api list-buckets',
+    pattern: /^aws s3api list-buckets$/,
+    service: 's3',
+    risk: RISK.READ_ONLY,
+  },
+  {
     command: 'aws ec2 describe-instances',
     pattern: /^aws ec2 describe-instances$/,
     service: 'ec2',
