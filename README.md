@@ -77,10 +77,14 @@ AWS Amplify Hosting
    ▼
 Amazon API Gateway (REST, /generate + /execute)
    │
-   ├── Lambda: generate ──► Amazon Bedrock (Claude) ──► structured JSON
+   ├── Lambda: generate ──► Amazon Bedrock (Amazon Nova Lite) ──► structured JSON
    │
    └── Lambda: execute  ──► Command validator (allowlist) ──► AWS SDK read-only calls
 ```
+
+> Editable diagram: [`docs/architecture.drawio`](./docs/architecture.drawio) —
+> open it with [draw.io / diagrams.net](https://app.diagrams.net) or the VS Code
+> "Draw.io Integration" extension.
 
 Two separate Lambdas by design: the **execute** path never receives raw model
 output. It only accepts a command string that must pass the allowlist validator,
