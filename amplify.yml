@@ -1,0 +1,22 @@
+# AWS Amplify Hosting build settings for the AWS CloudCLI frontend.
+# This is a monorepo: the React app lives in ./frontend and imports the
+# shared validator from ../shared, so we build from the repo root.
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        - npm ci
+    build:
+      commands:
+        # VITE_API_BASE_URL is injected from Amplify environment variables.
+        # Leave it unset to deploy in MOCK mode.
+        - npm run build
+  artifacts:
+    baseDirectory: frontend/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/node_modules/**/*

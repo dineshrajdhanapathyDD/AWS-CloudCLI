@@ -1,0 +1,24 @@
+{
+  "name": "aws-cloudcli-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AWS CloudCLI backend Lambdas: generate (Bedrock) + execute (allowlisted AWS SDK).",
+  "scripts": {
+    "test": "vitest run",
+    "build": "sam build",
+    "deploy": "sam build && sam deploy",
+    "deploy:guided": "sam build && sam deploy --guided"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.637.0",
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/client-ec2": "^3.637.0",
+    "@aws-sdk/client-lambda": "^3.637.0",
+    "@aws-sdk/client-dynamodb": "^3.637.0",
+    "@aws-sdk/client-sts": "^3.637.0",
+    "esbuild": "^0.24.0",
+    "vitest": "^2.0.4"
+  }
+}

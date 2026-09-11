@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+frontend/dist/
+backend/.aws-sam/
+
+# Environment
+.env
+.env.local
+*.env
+!*.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# AWS
+.aws-sam/
+samconfig.toml.bak

@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS CloudCLI backend — API Gateway + two Lambdas (generate via Bedrock,
+  execute via allowlisted read-only AWS SDK calls). No shell execution.
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-3-haiku-20240307-v1:0
+    Description: Bedrock model ID used by the generate function.
+  CorsOrigin:
+    Type: String
+    Default: '*'
+    Description: Allowed CORS origin (set to your Amplify URL in production).
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Timeout: 30
+    MemorySize: 256
+    Architectures: [x86_64]
+    Environment:
+      Variables:
+        CORS_ORIGIN: !Ref CorsOrigin
+
+Resources:
+  CloudCliApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'OPTIONS,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: !Sub "'${CorsOrigin}'"
+
+  GenerateFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Format: esm
+        OutExtension: [".js=.mjs"]
+        External:
+          - "@aws-sdk/*"
+        EntryPoints:
+          - src/handlers/generate.js
+    Properties:
+      Handler: generate.handler
+      Description: Turns a natural-language request into a structured AWS CLI command via Bedrock.
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      Policies:
+        # Least privilege: only allow invoking Bedrock foundation models.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/*'
+      Events:
+        Generate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudCliApi
+            Path: /generate
+            Method: post
+
+  ExecuteFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Format: esm
+        OutExtension: [".js=.mjs"]
+        External:
+          - "@aws-sdk/*"
+        EntryPoints:
+          - src/handlers/execute.js
+    Properties:
+      Handler: execute.handler
+      Description: Executes ONLY allowlisted read-only AWS CLI commands via the SDK.
+      Policies:
+        # Least privilege: strictly the read-only actions the executors use.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sts:GetCallerIdentity
+                - s3:ListAllMyBuckets
+                - ec2:DescribeInstances
+                - lambda:ListFunctions
+                - dynamodb:ListTables
+              Resource: '*'
+      Events:
+        Execute:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudCliApi
+            Path: /execute
+            Method: post
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL for the CloudCLI API. Set this as VITE_API_BASE_URL in the frontend.
+    Value: !Sub 'https://${CloudCliApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
+  GenerateEndpoint:
+    Value: !Sub 'https://${CloudCliApi}.execute-api.${AWS::Region}.amazonaws.com/prod/generate'
+  ExecuteEndpoint:
+    Value: !Sub 'https://${CloudCliApi}.execute-api.${AWS::Region}.amazonaws.com/prod/execute'
+
